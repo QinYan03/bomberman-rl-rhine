@@ -14,7 +14,7 @@ RHINE is a reinforcement learning agent for the four-player Bomberman framework 
 
 ## Results
 
-Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games per training seed (evaluation seed 1000), mean ± sample standard deviation over three training seeds, oscillation breaker on. The baseline is the agent from the last Task 3 stage (three `coin_collector_agent`s), which was never trained against `rule_based_agent`.
+Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games per training seed (evaluation seed 1000), mean ± sample standard deviation over three training seeds, oscillation breaker on. The baseline is a zero-shot evaluation of the final Stage D agent (the last stage of Task 3) under the same evaluation settings. The two agents differ in their training opponents (three `coin_collector_agent`s for Stage D, three `rule_based_agent`s for Task 4), in the three opponent-proximity features added in Task 4, and in a mask rule used in Stage D training that removed BOMB once all crates, coins and opponents were gone and that was dropped in Task 4. The comparison therefore measures the combined effect of these changes and cannot be attributed to any single one of them.
 
 | Agent | Score | Kills | Self-kill rate | Killed-by-opponent rate | Oscillation fraction |
 |---|---|---|---|---|---|
@@ -29,7 +29,7 @@ All evaluations in the report were run with the framework's per-step thinking-ti
 
 - Oscillation turned out to be a limitation of the Markovian state rather than of the reward. The evaluation-time breaker removed it at no cost in score, although it is a rule, not a learned skill.
 - Reward shaping destabilized learning on the dense coin board but was indispensable once crates made rewards sparse.
-- The Task 4 agent scored significantly higher than the Stage D agent without measurably fewer deaths; the gain came from more kills.
+- The Task 4 agent scored significantly higher than the Stage D agent, with more kills per game (0.58 instead of 0.34) and no significant change in the self-kill and killed-by-opponent rates.
 - Most remaining deaths come from losing a same-step contest for a tile, which the agent cannot control.
 - The score differs between training seeds by more than it differs between the Task 4 agent and the Stage D agent.
 
