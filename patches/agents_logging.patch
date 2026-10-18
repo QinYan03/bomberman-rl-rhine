@@ -1,0 +1,28 @@
+--- a/agents.py
++++ b/agents.py
+@@ -4,6 +4,7 @@
+ import os
+ import queue
+ from collections import defaultdict
++from datetime import datetime
+ from inspect import signature
+ from io import BytesIO
+ from time import time
+@@ -225,10 +226,16 @@
+         self.fake_self.logger.setLevel(s.LOG_AGENT_CODE)
+         log_dir = f'agent_code/{self.code_name}/logs/'
+         if not os.path.exists(log_dir): os.makedirs(log_dir)
+-        handler = logging.FileHandler(f'{log_dir}{self.agent_name}.log', mode="w")
++        # Date and PID in the filename keep concurrent processes from overwriting each
++        # other's logs; append mode and clearing old handlers keep repeated world
++        # construction in one process from truncating, duplicating or leaking handlers.
++        log_path = f'{log_dir}{self.agent_name}_{datetime.now().strftime("%Y%m%d")}_pid{os.getpid()}.log'
++        handler = logging.FileHandler(log_path, mode="a")
+         handler.setLevel(logging.DEBUG)
+         formatter = logging.Formatter('%(asctime)s [%(name)s] %(levelname)s: %(message)s')
+         handler.setFormatter(formatter)
++        self.wlogger.handlers.clear()
++        self.fake_self.logger.handlers.clear()
+         self.wlogger.addHandler(handler)
+         self.fake_self.logger.addHandler(handler)
+ 

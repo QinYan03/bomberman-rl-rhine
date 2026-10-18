@@ -1,0 +1,32 @@
+# Upstream framework, downloaded by setup.sh
+framework/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv*/
+
+# Run output
+logs/
+*.log
+
+# OS
+.DS_Store
+*:Zone.Identifier
+
+# LaTeX build files
+*.aux
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+
+# Training output; only the final checkpoint is tracked
+agent_code/rhine/models/*
+!agent_code/rhine/models/task4_seed0.pt
