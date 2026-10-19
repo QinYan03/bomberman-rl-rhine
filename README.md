@@ -2,7 +2,12 @@
 
 Author: Qin Yan
 
-RHINE is a reinforcement learning agent for the four-player Bomberman framework of the course *Machine Learning Essentials* at Heidelberg University (summer semester 2026). It was the author's individually developed part of a group project. This repository contains only the author's own work.
+<p align="center"><img src="media/rhine_demo.gif" width="480" alt="RHINE playing against three rule_based_agents"></p>
+<p align="center"><em>One game against three <code>rule_based_agent</code>s. Individual games vary widely. Average results are given under <a href="#results">Results</a>.</em></p>
+
+RHINE is a PPO agent for four-player Bomberman that acts on 31 engineered features under a rule-based safety mask. Trained from scratch through a staged curriculum, it beats three scripted `rule_based_agent`s, scoring 6.33 points per game against 5.04 for the best opponent and finishing alone in first place in 53% of games.
+
+It was developed as the author's individual part of a group project in the course *Machine Learning Essentials* at Heidelberg University (summer semester 2026). This repository contains only the author's own work.
 
 ## Method
 
@@ -14,7 +19,7 @@ RHINE is a reinforcement learning agent for the four-player Bomberman framework 
 
 ## Results
 
-Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games per training seed (evaluation seed 1000), mean ± sample standard deviation over three training seeds, oscillation breaker on. The baseline is the final Stage D agent (the last stage of Task 3), evaluated zero-shot under the same settings. Besides its training opponents (three `coin_collector_agent`s instead of three `rule_based_agent`s), it lacks the three opponent-proximity features added in Task 4 and was trained with a mask rule, dropped in Task 4, that removed BOMB once the board was cleared. The comparison therefore measures the combined effect of these changes.
+Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games per training seed (evaluation seed 1000), mean ± sample standard deviation over three training seeds, oscillation breaker on.
 
 | Agent | Score | Kills | Self-kill rate | Killed-by-opponent rate | Oscillation fraction |
 |---|---|---|---|---|---|
@@ -22,6 +27,8 @@ Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games pe
 | Stage D agent (baseline) | 5.00 ± 0.54 | 0.34 ± 0.07 | 0.153 ± 0.104 | 0.107 ± 0.006 | 0.007 ± 0.012 |
 
 In the same games, the best of the three opponents averaged 5.04 points per game, and RHINE finished alone in first place in 53% of games (63% including ties). Under a second evaluation seed (2000), RHINE scored 6.11 against 4.84 and finished alone in first place in 52% of games.
+
+The baseline is the final Stage D agent (the last stage of Task 3), evaluated zero-shot under the same settings. Besides its training opponents (three `coin_collector_agent`s instead of three `rule_based_agent`s), it lacks the three opponent-proximity features added in Task 4 and was trained with a mask rule, dropped in Task 4, that removed BOMB once the board was cleared. The comparison therefore measures the combined effect of these changes.
 
 All evaluations in the report were run with the framework's per-step thinking-time limit disabled, so that load fluctuations on the evaluation machine could not force WAIT actions. The decision time of the final agent was measured separately in 20 games: the mean `act()` time was 15.8 ms and the maximum 125.2 ms, well below the 0.5 s limit.
 
@@ -38,6 +45,7 @@ All evaluations in the report were run with the framework's per-step thinking-ti
 ```
 agent_code/
   rhine/            Agent code, the final checkpoint (models/), training and evaluation scripts (scripts/) and tests (tests/)
+media/              Demo animation used in this README
 patches/
   agents_logging.patch   Logging fix applied to the framework's agents.py by setup.sh
 report/
