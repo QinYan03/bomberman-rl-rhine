@@ -8,13 +8,13 @@ RHINE is a reinforcement learning agent for the four-player Bomberman framework 
 
 - **PPO actor-critic.** A multilayer perceptron with a shared trunk of two 64-unit tanh layers, a policy head over the six actions and a value head, trained with the clipped PPO objective and generalized advantage estimation.
 - **31 engineered features.** Computed from breadth-first-search distances, blast coverage and time-dependent danger. No feature encodes a recommended action.
-- **Rule-based action mask.** Removes illegal actions and actions that lead to a known, unavoidable death; the policy chooses among the remaining ones, in training and in play.
+- **Rule-based action mask.** Removes illegal actions and actions that lead to a known, unavoidable death. The policy chooses among the remaining ones, in training and in play.
 - **Oscillation breaker.** An evaluation-only refinement of the mask that stops the agent from stepping back and forth between two tiles. It is never active during training.
-- **Four-task curriculum.** Coins on an empty board, crates and bombs, passive and then coin-collecting opponents, and finally three `rule_based_agent`s. Every task and stage was trained from a random initialization; no weights were transferred.
+- **Four-task curriculum.** The course defines four tasks: coins on a board without crates, crates and bombs, passive and coin-collecting opponents, and stronger opponents such as the `rule_based_agent`. The training stages within these tasks were designed by the author, for example four opponent stages in Task 3 with one and then three opponents of each kind. Every task and stage was trained from a random initialization, without weight transfer.
 
 ## Results
 
-Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games per training seed (evaluation seed 1000), mean ± sample standard deviation over three training seeds, oscillation breaker on. The baseline is a zero-shot evaluation of the final Stage D agent (the last stage of Task 3) under the same evaluation settings. The two agents differ in their training opponents (three `coin_collector_agent`s for Stage D, three `rule_based_agent`s for Task 4), in the three opponent-proximity features added in Task 4, and in a mask rule used in Stage D training that removed BOMB once all crates, coins and opponents were gone and that was dropped in Task 4. The comparison therefore measures the combined effect of these changes and cannot be attributed to any single one of them.
+Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games per training seed (evaluation seed 1000), mean ± sample standard deviation over three training seeds, oscillation breaker on. The baseline is the final Stage D agent (the last stage of Task 3), evaluated zero-shot under the same settings. Besides its training opponents (three `coin_collector_agent`s instead of three `rule_based_agent`s), it lacks the three opponent-proximity features added in Task 4 and was trained with a mask rule, dropped in Task 4, that removed BOMB once the board was cleared. The comparison therefore measures the combined effect of these changes.
 
 | Agent | Score | Kills | Self-kill rate | Killed-by-opponent rate | Oscillation fraction |
 |---|---|---|---|---|---|
@@ -51,7 +51,7 @@ LICENSE             MIT license for the code in this repository
 
 ## Installation
 
-Requires Python 3.12 on Linux, macOS or WSL, and git.
+Requires Python 3.12 and git. Tested on Linux (WSL2).
 
 ```bash
 python3.12 -m venv .venv
@@ -86,14 +86,14 @@ Tests:
 python -m pytest agent_code/rhine/tests -q
 ```
 
-Evaluation of the final checkpoint in 100 games against three `rule_based_agent`s, oscillation breaker on and thinking-time limit disabled as in the report (the checkpoint path must be absolute):
+Evaluation of the final checkpoint in 100 games against three `rule_based_agent`s, oscillation breaker on and thinking-time limit disabled, with the settings used for the report. `--reproducible` fixes the opponents' randomness, so with the checkpoint above the command reproduces the report's training seed 0 results exactly. The checkpoint path must be absolute:
 
 ```bash
 python -m agent_code.rhine.scripts.eval_stage_d_final \
     --checkpoint "$PWD/agent_code/rhine/models/task4_seed0.pt" --group A \
     --out-dir results/rhine_eval --n-rounds 100 \
     --opponents rule_based_agent rule_based_agent rule_based_agent \
-    --no-enable-no-bomb-when-cleared --disable-think-time-limit
+    --no-enable-no-bomb-when-cleared --disable-think-time-limit --reproducible
 ```
 
 Training of the Task 4 agent for one seed (the checkpoint path must be absolute):
@@ -103,6 +103,8 @@ python -m agent_code.rhine.scripts.run_stage_a2_task3 --stage TASK4 --seed 0 \
     --checkpoint-path-override "$PWD/agent_code/rhine/models/my_task4_seed0.pt"
 ```
 
+The Task 4 runs in the report additionally passed `--disable-periodic-eval` and `--enable-oscillation-breaker` (the latter only affects evaluation), evaluated snapshots in a separate process with `run_task4_async_eval.py` and chose the checkpoint offline with `select_task4_checkpoint.py`.
+
 Use `--help` on any script for its options.
 
 ## Report
@@ -111,9 +113,9 @@ The full description of the method, the training procedure, the experiments and 
 
 ## Acknowledgements and sources
 
-The game framework is the course framework at https://github.com/ukoethe/bomberman_rl, used at commit `0f55c1d207e586e6fe6db95e64302ed32281e370`. The upstream repository does not state a license, so this repository does not include any framework code; `setup.sh` downloads it from the original repository.
+The game framework is the course framework at https://github.com/ukoethe/bomberman_rl, used at commit `0f55c1d207e586e6fe6db95e64302ed32281e370`. The upstream repository does not state a license, so this repository does not include any framework code. `setup.sh` downloads it from the original repository.
 
-Implementation was AI-assisted; the design decisions, experiments and analysis were directed by the author.
+Implementation was AI-assisted. The design decisions, experiments and analysis were directed by the author.
 
 ## License
 

@@ -146,7 +146,7 @@
 		% ------------------------------------------------
 		
 		\begin{center}
-			September 28, 2026
+			September 28, 2026 (revised October 2026)
 		\end{center}
 		
 		\vspace{1cm}
@@ -154,7 +154,7 @@
 	\end{titlepage}
 	
 	\begin{abstract}
-		This report presents RHINE, a reinforcement learning agent for a simplified multi-player version of Bomberman, developed as the author's individual part of a group project in the course Machine Learning Essentials at Heidelberg University. RHINE is a proximal policy optimization agent with an actor-critic multilayer perceptron that acts on 31 engineered features. A rule-based mask removes illegal actions and actions that lead to a known, unavoidable death, and the policy chooses among the remaining ones. The agent was trained from scratch through a four-task curriculum, from coin collection on an empty board to the full game against three rule-based opponents. In 100 games per training seed against three \texttt{rule\_based\_agent}s, it scored 6.33 points per game on average, against 5.04 for the best opponent in each game, and finished alone in first place in 53\% of games. Most of its remaining deaths arise from same-step contests for a tile, whose outcome the agent cannot control.
+		This report presents RHINE, a reinforcement learning agent for a simplified multi-player version of Bomberman, developed as the author's individual part of a group project in the course Machine Learning Essentials at Heidelberg University. RHINE is a proximal policy optimization agent with an actor-critic multilayer perceptron that acts on 31 engineered features. A rule-based mask removes illegal actions and actions that lead to a known, unavoidable death, and the policy chooses among the remaining ones. The agent was trained from scratch through a four-task curriculum, from coin collection on an empty board to the full game against three rule-based opponents. In 100 games for each of three training seeds against three \texttt{rule\_based\_agent}s, it scored 6.33 points per game on average across seeds, against 5.04 for the best opponent in each game, and finished alone in first place in 53\% of games. Most of its remaining deaths arise from same-step contests for a tile, whose outcome the agent cannot control.
 	\end{abstract}
 	% ================================================================
 	% TABLE OF CONTENTS
@@ -177,12 +177,12 @@
 	
 	The game is played by four agents on a 17$\times$17 board of walls, crates and free tiles. In every step, each agent chooses one of six actions: a move in one of the four directions, WAIT or BOMB. A bomb explodes 4 steps after it is placed and destroys crates and agents up to 3 tiles away in each straight direction, unless a wall blocks the blast. Destroyed crates may reveal coins. Collecting a coin scores one point and killing an opponent scores five. A round lasts at most 400 steps.
 	
-	The agent has to decide within 0.5~s per step on a single CPU thread, and no training takes place during play. It is evaluated against the framework's scripted \texttt{rule\_based\_agent} and finally in a tournament against the agents of other groups, whose behaviour is unknown in advance.
+	The agent has to decide within 0.5~s per step on a single CPU thread. It is evaluated against the framework's scripted \texttt{rule\_based\_agent} and finally in a tournament against the agents of other groups, whose behaviour is unknown in advance.
 	
-	The course structures the problem into four tasks of increasing difficulty: collecting coins on a board without crates or opponents (Task~1), clearing crates with bombs without opponents (Task~2), playing against passive and coin-collecting opponents (Task~3), and playing the full game against three \texttt{rule\_based\_agent}s (Task~4). RHINE was developed independently by the author within a three-person group, in which the other members developed separate agents. This report covers RHINE only. Chapter~\ref{chap:methods} describes the final design, Chapter~\ref{chap:training} the training procedure, Chapter~\ref{chap:results} the experiments that led to the final design together with the results, and Chapter~\ref{chap:conclusion} the conclusions.
+	The course structures the problem into four tasks of increasing difficulty: collecting coins on a board without crates or opponents (Task~1), clearing crates with bombs without opponents (Task~2), hunting a passive and a coin-collecting opponent (Task~3), and holding its own against one or more opponents such as the full-strength \texttt{rule\_based\_agent} (Task~4). In this work, Task~3 was split into four stages with one and then three opponents of each kind, and Task~4 used three \texttt{rule\_based\_agent}s. RHINE was developed independently by the author within a three-person group, in which the other members developed separate agents. This report covers RHINE only. Chapter~\ref{chap:methods} describes the final design, Chapter~\ref{chap:training} the training procedure, Chapter~\ref{chap:results} the experiments that led to the final design together with the results, and Chapter~\ref{chap:conclusion} the conclusions.
 	
 	% ================================================================
-	% 4. METHODS
+	% METHODS
 	% ================================================================
 	
 	\chapter{Methods}
@@ -194,7 +194,7 @@
 	
 	RHINE is a proximal policy optimization (PPO) agent~\cite{schulman2017ppo} with an actor-critic multilayer perceptron that acts on a compact vector of engineered features. Each game state is first reduced to model-independent semantic quantities (breadth-first-search distances, blast coverage, time-dependent danger), from which a 31-dimensional feature vector is built. A rule-based action mask removes actions that are illegal or lead to a known, unavoidable death; the policy then chooses among the remaining actions. The division of labour is deliberate: the mask decides what must never be done, the features supply the information needed for a decision, the reward expresses which outcomes are preferred, and the network learns the relative long-term value of the remaining legal actions. No feature encodes a recommended action. The features describe distances, directions and risks, and the choice is learned.
 	
-	The design was built up over the four tasks. The following subsections describe the final form and state in which task each component was introduced, while the development history and the variants that were discarded are reported in Chapters~\ref{sec:rhine_training} and~\ref{sec:rhine_results}.
+	The design was built up over the four tasks. The following sections describe the final form and state in which task each component was introduced, while the development history and the variants that were discarded are reported in Chapters~\ref{sec:rhine_training} and~\ref{sec:rhine_results}.
 	
 	\section{State representation}
 	\label{subsec:rhine_features}
@@ -324,7 +324,7 @@
 	All results in this chapter and the following ones were obtained with the framework's per-step thinking-time limit disabled, so that occasional delays caused by concurrent load on the evaluation machine cannot force WAIT actions and distort the policy's measured behaviour. From Task 3 Stage D onwards, the opponents' random number generators were reseeded at the start of every game from the evaluation seed and the game index, and the Stage D baseline and all Task 4 evaluations were rerun with this setting, so that they are exactly reproducible. Any anomaly in the results could therefore be replayed and traced to its underlying pattern, against which a targeted change to the design was then developed. To confirm that the final agent stays within the 500~ms limit, its thinking time was measured separately in 20 games against three \texttt{rule\_based\_agent}s: the mean \texttt{act()} time was 15.8~ms and the maximum 125.2~ms, roughly 155~ms when scaled to the tournament processor by PassMark ratings. Across this and a second run of the same length, the framework recorded 3 overruns in 11{,}010 calls, each of about 1.4~s. These pauses far exceed the processor time measured for any \texttt{act()} call and therefore arose outside the policy computation, but their cause was not investigated.
 	
 	% ================================================================
-	% 5. TRAINING
+	% TRAINING
 	% ================================================================
 	
 	\chapter{Training}
@@ -389,7 +389,7 @@
 	Task 4 trained against three \texttt{rule\_based\_agent}s. In the zero-shot evaluation of the Stage D agent against them, deaths caused by opponents almost always occurred with at least two opponents alive and after the space around the agent had narrowed. The three opponent-proximity features were added to make this situation visible to the policy.
 	
 	% ================================================================
-	% 6. EXPERIMENTS AND RESULTS
+	% EXPERIMENTS AND RESULTS
 	% ================================================================
 	
 	\chapter{Experiments and Results}
@@ -590,7 +590,7 @@
 	\end{table}
 	
 	% ================================================================
-	% 7. CONCLUSION
+	% CONCLUSION
 	% ================================================================
 	
 	\chapter{Conclusion}
