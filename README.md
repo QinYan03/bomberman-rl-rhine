@@ -11,7 +11,7 @@ RHINE was my individual part of a group project in the course *Machine Learning 
 
 ## Approach
 
-**A learned policy inside safety rules.** A PPO actor-critic (shared trunk of two 64-unit tanh layers, policy and value heads, clipped objective with generalized advantage estimation) acts on 31 engineered features built from breadth-first-search distances, blast coverage and time-dependent danger. No feature encodes a recommended action. A rule-based mask removes illegal actions and actions that lead to a known, unavoidable death, for example a bomb without an escape route. The mask is active in training and in play, so the policy only ever learns and chooses among safe actions.
+**A learned policy inside safety rules.** A PPO actor-critic (shared trunk of two 64-unit tanh layers, policy and value heads, clipped objective with generalized advantage estimation) acts on 31 engineered features built from breadth-first-search distances, blast coverage and time-dependent danger. No feature encodes a recommended action. A rule-based mask removes illegal actions and actions that lead to a known, unavoidable death, for example a bomb without an escape route. The mask is active in training as well as in evaluation, so the policy only ever learns and chooses among safe actions.
 
 **A curriculum planned stage by stage.** The course suggests four tasks of increasing difficulty: coins on an empty board, crates and bombs, passive and coin-collecting opponents, and the full-strength `rule_based_agent`. Within these I planned the training stages myself:
 
@@ -27,7 +27,7 @@ Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games pe
 
 | Agent | Score | Kills | Self-kill rate | Killed-by-opponent rate | Oscillation fraction |
 |---|---|---|---|---|---|
-| Stage D agent, zero-shot | 5.00 ± 0.54 | 0.34 ± 0.07 | 0.153 ± 0.104 | 0.107 ± 0.006 | 0.007 ± 0.012 |
+| Task 3 agent, zero-shot | 5.00 ± 0.54 | 0.34 ± 0.07 | 0.153 ± 0.104 | 0.107 ± 0.006 | 0.007 ± 0.012 |
 | Task 4 agent (final) | 6.33 ± 0.76 | 0.58 ± 0.19 | 0.113 ± 0.025 | 0.130 ± 0.026 | 0.007 ± 0.006 |
 
 - **Against the opponents.** In the same games, the best of the three opponents averaged 5.04 points. RHINE finished first in 63% of games and alone in first place in 53%. Under a second evaluation seed (2000), it scored 6.11 against 4.84 and finished alone in first place in 52% of games.
