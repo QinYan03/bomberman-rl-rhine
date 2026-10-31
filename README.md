@@ -1,7 +1,5 @@
 # RHINE: a curriculum-trained PPO agent for Bomberman
 
-Author: Qin Yan
-
 <p align="center"><img src="media/rhine_demo.gif" width="480" alt="RHINE playing against three rule_based_agents"></p>
 <p align="center"><em>One game against three <code>rule_based_agent</code>s. Individual games vary widely. Average results are given under <a href="#results">Results</a>.</em></p>
 
@@ -103,7 +101,7 @@ Full details on the method, training, experiments and results are in [report/rhi
 
 The game framework is the course framework at https://github.com/ukoethe/bomberman_rl, used at commit `0f55c1d207e586e6fe6db95e64302ed32281e370`. The upstream repository does not state a license, so this repository does not include any framework code. `setup.sh` downloads it from the original repository.
 
-Implementation was AI-assisted. The design decisions, experiments and analysis were directed by the author.
+The design decisions, experiments and analysis are my own. I used AI coding assistants during implementation.
 
 ## License
 
