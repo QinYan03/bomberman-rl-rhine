@@ -5,36 +5,43 @@ Author: Qin Yan
 <p align="center"><img src="media/rhine_demo.gif" width="480" alt="RHINE playing against three rule_based_agents"></p>
 <p align="center"><em>One game against three <code>rule_based_agent</code>s. Individual games vary widely. Average results are given under <a href="#results">Results</a>.</em></p>
 
-RHINE is a PPO agent for four-player Bomberman that acts on 31 engineered features under a rule-based safety mask. Trained from scratch through a staged curriculum, it beats three scripted `rule_based_agent`s, scoring 6.33 points per game against 5.04 for the best opponent and finishing alone in first place in 53% of games.
+RHINE is a PPO agent for four-player Bomberman. Against three copies of the course's full-strength `rule_based_agent`, it averages 6.33 points per game against 5.04 for the best opponent (+26%) and finishes first in 63% of games (53% alone).
 
-It was developed as the author's individual part of a group project in the course *Machine Learning Essentials* at Heidelberg University (summer semester 2026). This repository contains only the author's own work.
+RHINE was my individual part of a group project in the course *Machine Learning Essentials* at Heidelberg University (summer semester 2026). I designed, implemented, trained and evaluated it alone, and this repository contains only my own work.
 
-## Method
+## Approach
 
-- **PPO actor-critic.** A multilayer perceptron with a shared trunk of two 64-unit tanh layers, a policy head over the six actions and a value head, trained with the clipped PPO objective and generalized advantage estimation.
-- **31 engineered features.** Computed from breadth-first-search distances, blast coverage and time-dependent danger. No feature encodes a recommended action.
-- **Rule-based action mask.** Removes illegal actions and actions that lead to a known, unavoidable death. The policy chooses among the remaining ones, in training and in play.
-- **Oscillation breaker.** An evaluation-only refinement of the mask that stops the agent from stepping back and forth between two tiles. It is never active during training.
-- **Four-task curriculum.** The course defines four tasks, from coin collection to stronger opponents such as the `rule_based_agent`. The training stages within them were designed by the author, for example four opponent stages in Task 3. Every task and stage was trained from scratch, without weight transfer.
+**A learned policy inside safety rules.** A PPO actor-critic (shared trunk of two 64-unit tanh layers, policy and value heads, clipped objective with generalized advantage estimation) acts on 31 engineered features built from breadth-first-search distances, blast coverage and time-dependent danger. No feature encodes a recommended action. A rule-based mask removes illegal actions and actions that lead to a known, unavoidable death, for example a bomb without an escape route. The mask is active in training and in play, so the policy only ever learns and chooses among safe actions.
+
+**A curriculum planned stage by stage.** The course suggests four tasks of increasing difficulty: coins on an empty board, crates and bombs, passive and coin-collecting opponents, and the full-strength `rule_based_agent`. Within these I planned the training stages myself:
+
+- Tasks 1 and 2 were trained on boards with 50 coins, which give many reward events while a skill is learned, and transferred zero-shot to the 9-coin boards. No fine-tuning was needed.
+- Task 3 was split into four stages, one and then three opponents of each kind, so that every new failure mode could be traced to a single change.
+- Every task and stage was trained from random initialization, so each result reflects that stage's own feature and reward design.
+
+**Monitoring and checkpoint selection.** Training was interleaved with periodic evaluation games, which showed when and how performance collapsed instead of only the final outcome. The final checkpoint was the best by score among the top five periodic evaluations, after discarding those whose self-kill, oscillation or killed-by-opponent rate clearly exceeded the median. These selection games used a separate evaluation seed, so selection and final evaluation are independent.
 
 ## Results
 
-Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games per training seed (evaluation seed 1000), mean ± sample standard deviation over three training seeds, oscillation breaker on.
+Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games per training seed (evaluation seed 1000), mean ± sample standard deviation over three training seeds. A coin is worth 1 point and a kill 5 points.
 
 | Agent | Score | Kills | Self-kill rate | Killed-by-opponent rate | Oscillation fraction |
 |---|---|---|---|---|---|
-| Task 4 agent | 6.33 ± 0.76 | 0.58 ± 0.19 | 0.113 ± 0.025 | 0.130 ± 0.026 | 0.007 ± 0.006 |
+| Stage D agent, zero-shot | 5.00 ± 0.54 | 0.34 ± 0.07 | 0.153 ± 0.104 | 0.107 ± 0.006 | 0.007 ± 0.012 |
+| Task 4 agent (final) | 6.33 ± 0.76 | 0.58 ± 0.19 | 0.113 ± 0.025 | 0.130 ± 0.026 | 0.007 ± 0.006 |
 
-In the same games, the best of the three opponents averaged 5.04 points per game, and RHINE finished alone in first place in 53% of games (63% including ties). Under a second evaluation seed (2000), RHINE scored 6.11 against 4.84 and finished alone in first place in 52% of games.
-
-All evaluations ran with the per-step thinking-time limit disabled, so that load on the evaluation machine could not force WAIT actions. Measured separately in 20 games, the final agent's decision time averaged 15.8 ms (maximum 125.2 ms), well below the 0.5 s limit.
+- **Against the opponents.** In the same games, the best of the three opponents averaged 5.04 points. RHINE finished first in 63% of games and alone in first place in 53%. Under a second evaluation seed (2000), it scored 6.11 against 4.84 and finished alone in first place in 52% of games.
+- **Gain from Task 4 training.** Compared with the Task 3 agent evaluated zero-shot, training against the `rule_based_agent` raised the score by 1.33 points (standard error 0.30 over 300 games). The gain came from more kills, not from fewer deaths.
+- **Decision time.** All evaluations ran with the per-step thinking-time limit disabled, so that machine load could not force WAIT actions. Measured separately in 20 games, the final agent decided in 15.8 ms on average (maximum 125.2 ms), well below the 0.5 s limit.
 
 ## Key findings
 
-- Oscillation turned out to be a limitation of the Markovian state rather than of the reward. The evaluation-time breaker removed it at no cost in score, although it is a rule, not a learned skill.
-- Reward shaping destabilized learning on the dense coin board but was indispensable once crates made rewards sparse.
-- Most remaining deaths come from losing a same-step contest for a tile, which the agent cannot control.
-- Scores differ substantially between training seeds, from 5.64 to 7.15 points per game.
+- **Opponents can make rewards sparse.** Against a single coin-collecting opponent, kills were too rare for the value of attacking to be learned, and the bombing probability was almost uncorrelated with the kill-target features. With three opponents, the agent took 66% of its kill opportunities. It had learned to attack, but not yet to aim.
+- **Reward shaping depends on reward density.** It destabilized learning on the dense coin board but was indispensable once crates made rewards sparse.
+- **Oscillation is a limit of the state, not of the reward.** The policy sees no history, so it cannot tell how long it has been stepping back and forth, and reward penalties alone could not stop the loop. An evaluation-only oscillation breaker reduced oscillating games from 11 to 0 of 300 at no cost in score. It is a rule, not a learned skill.
+- **Most remaining deaths are outside the agent's control.** 50 of the 73 deaths of the final agent (68%) followed a lost same-step contest for the tile it needed to escape. The game decides such contests by a random processing order after the actions are submitted, so neither the mask nor training can change them.
+- **Attacking is limited by opportunity.** When an opponent was trapped in the blast with no safe path out, RHINE bombed in 87% of such steps. The next step for improvement is therefore creating traps, not a higher kill reward.
+- **Training seeds matter.** Scores differ between training seeds from 5.64 to 7.15 points per game, more than the gain from Task 4 training.
 
 ## Repository layout
 
