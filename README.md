@@ -3,7 +3,7 @@
 <p align="center"><img src="media/rhine_demo.gif" width="480" alt="RHINE playing against three rule_based_agents"></p>
 <p align="center"><em>One game against three <code>rule_based_agent</code>s. Individual games vary widely. Average results are given under <a href="#results">Results</a>.</em></p>
 
-RHINE is a PPO agent for four-player Bomberman. Against three copies of the course's full-strength `rule_based_agent`, it averages 6.33 points per game against 5.04 for the best opponent (+26%) and finishes first in 63% of games (53% alone).
+RHINE is a PPO agent for four-player Bomberman. Against three copies of the course's full-strength `rule_based_agent`, it averages 6.33 points per game against 5.04 for the best opponent (+26%) and finishes first in 63% of games (53% alone). In the course tournament it finished 12th of 71 agents.
 
 RHINE was my individual part of a group project in the course *Machine Learning Essentials* at Heidelberg University (summer semester 2026). I designed, implemented, trained and evaluated it alone, and this repository contains only my own work.
 
@@ -30,6 +30,7 @@ Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games pe
 
 - **Against the opponents.** In the same games, the best of the three opponents averaged 5.04 points. RHINE finished first in 63% of games and alone in first place in 53%. Under a second evaluation seed (2000), it scored 6.11 against 4.84 and finished alone in first place in 52% of games.
 - **Gain from Task 4 training.** Compared with the Task 3 agent evaluated zero-shot, training against the `rule_based_agent` raised the score by 1.33 points (standard error 0.30 over 300 games). The gain came from more kills, not from fewer deaths.
+- **Course tournament.** RHINE was my team's submission. All 71 agents were first ranked by an Elo rating from games against the `rule_based_agent` and randomly selected opponents, where RHINE placed 15th. The top 16 then played a final of 10 rounds of every match-up, in which RHINE finished 12th, so 12th of 71 overall.
 - **Decision time.** All evaluations ran with the per-step thinking-time limit disabled, so that machine load could not force WAIT actions. Measured separately in 20 games, the final agent decided in 15.8 ms on average (maximum 125.2 ms), well below the 0.5 s limit.
 
 ## Key findings
