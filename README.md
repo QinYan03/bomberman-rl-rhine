@@ -30,7 +30,7 @@ Task 4 against three `rule_based_agent`s on the `classic` scenario: 100 games pe
 
 - **Against the opponents.** In the same games, the best of the three opponents averaged 5.04 points. RHINE finished first in 63% of games and alone in first place in 53%. Under a second evaluation seed (2000), it scored 6.11 against 4.84 and finished alone in first place in 52% of games.
 - **Gain from Task 4 training.** Compared with the Task 3 agent evaluated zero-shot, training against the `rule_based_agent` raised the score by 1.33 points (standard error 0.30 over 300 games). The gain came from more kills, not from fewer deaths.
-- **Course tournament.** RHINE was my team's submission. All 71 agents were first ranked by an Elo rating from games against the `rule_based_agent` and randomly selected opponents, where RHINE placed 15th. The top 16 then played a final of 10 rounds of every match-up, in which RHINE finished 12th, so 12th of 71 overall.
+- **Course tournament.** RHINE was my team's submission. All 71 agents were first ranked by an Elo rating from games against the `rule_based_agent` and randomly selected opponents, and RHINE ranked 15th. The top 16 then played every possible match-up 10 times, and RHINE finished 12th in this final.
 - **Decision time.** All evaluations ran with the per-step thinking-time limit disabled, so that machine load could not force WAIT actions. Measured separately in 20 games, the final agent decided in 15.8 ms on average (maximum 125.2 ms), well below the 0.5 s limit.
 
 ## Key findings
